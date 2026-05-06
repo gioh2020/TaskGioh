@@ -1,0 +1,72 @@
+# ============================================================
+# Docker Compose — PRODUCTION (EC2)
+# Servicios: SQL Server + Backend (Docker Hub) + Frontend (Docker Hub)
+# ============================================================
+
+services:
+
+  # ────────────────────────────────────────────
+  # SQL Server 2022
+  # ────────────────────────────────────────────
+  sqlserver:
+    image: mcr.microsoft.com/azure-sql-edge:latest
+    user: root
+    container_name: taskmanagement-sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "TaskMgmt2025Strong"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+      - ./Database/init-db.sql:/docker-entrypoint-initdb/init-db.sql
+      - ./Database/entrypoint.sh:/docker-entrypoint-initdb/entrypoint.sh
+    entrypoint: /bin/bash /docker-entrypoint-initdb/entrypoint.sh
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'TaskMgmt2025Strong' -C -Q 'SELECT 1' || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    networks:
+      - taskmanagement-net
+
+  # ────────────────────────────────────────────
+  # Backend — .NET 8 API (From Docker Hub)
+  # ────────────────────────────────────────────
+  backend:
+    image: gioh2020/taskmanagement-backend:latest
+    container_name: taskmanagement-backend
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Production"
+      ASPNETCORE_URLS: "http://+:8080"
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=TaskManagementDB;User Id=sa;Password=TaskMgmt2025Strong;TrustServerCertificate=True;MultipleActiveResultSets=True;"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    networks:
+      - taskmanagement-net
+    restart: unless-stopped
+
+  # ────────────────────────────────────────────
+  # Frontend — Angular + NGINX (From Docker Hub)
+  # ────────────────────────────────────────────
+  frontend:
+    image: gioh2020/taskmanagement-frontend:latest
+    container_name: taskmanagement-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - taskmanagement-net
+    restart: unless-stopped
+
+networks:
+  taskmanagement-net:
+    driver: bridge
+
+volumes:
+  sqlserver-data:
+    driver: local

@@ -1,0 +1,122 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  /* Royal Blue Theme Colors */
+  --primary-blue: #2f54eb;
+  --primary-hover: #1d39c4;
+  --bg-light: #f4f7fe;
+  --white: #ffffff;
+  --text-dark: #2b3674;
+  --text-gray: #a3aed0;
+  --shadow-blue: rgba(47, 84, 235, 0.12);
+  --success: #05cd99;
+  --warning: #ffce20;
+  --danger: #ee5d50;
+  
+  /* Soft Red for Create Actions */
+  --create-red: #ff7675;
+  --create-red-hover: #fab1a0;
+  --shadow-red: rgba(255, 118, 117, 0.2);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-light);
+  color: var(--text-dark);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(163, 174, 208, 0.5); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(163, 174, 208, 0.8); }
+
+button, input, select, textarea { 
+  font-family: inherit; 
+}
+
+a { 
+  color: var(--primary-blue); 
+  text-decoration: none; 
+  transition: color 0.2s ease;
+}
+a:hover { 
+  color: var(--primary-hover); 
+}
+
+/* Base Animations */
+@keyframes fadeSlideUp {
+  0% { opacity: 0; transform: translateY(15px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Medical UI Style Buttons */
+.btn {
+  padding: 0.85rem 1.75rem;
+  border-radius: 9999px; /* Píldora */
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-primary {
+  background: var(--primary-blue);
+  color: var(--white);
+  box-shadow: 0 10px 20px var(--shadow-blue);
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 25px rgba(47, 84, 235, 0.2);
+}
+
+.btn-create {
+  background: var(--create-red);
+  color: var(--white);
+  box-shadow: 0 10px 20px var(--shadow-red);
+}
+
+.btn-create:hover:not(:disabled) {
+  transform: translateY(-2px);
+  background: var(--create-red-hover);
+  box-shadow: 0 15px 25px rgba(255, 118, 117, 0.3);
+}
+
+.btn-secondary {
+  background: var(--white);
+  color: var(--primary-blue);
+  border: 1px solid rgba(47, 84, 235, 0.1);
+}
+
+.btn-secondary:hover {
+  background: rgba(47, 84, 235, 0.05);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}

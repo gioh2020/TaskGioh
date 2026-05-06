@@ -1,0 +1,30 @@
+<nav class="navbar">
+  <div class="navbar-brand">
+    <span class="brand-icon">🚀</span>
+    TaskGIOH
+  </div>
+  <button class="hamburger-btn" (click)="toggleMenu()" aria-label="Toggle menu">
+    <span class="hamburger-line"></span>
+    <span class="hamburger-line"></span>
+    <span class="hamburger-line"></span>
+  </button>
+
+  <nav class="nav-links" [class.menu-open]="isMenuOpen">
+    <a routerLink="/" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">Inicio</a>
+    <a routerLink="/tasks" routerLinkActive="active-link" (click)="closeMenu()">Tareas</a>
+    <a routerLink="/users" routerLinkActive="active-link" (click)="closeMenu()">Usuarios</a>
+    <a routerLink="/about" routerLinkActive="active-link" (click)="closeMenu()">Sobre Mí</a>
+  </nav>
+</nav>
+<main class="main-content">
+  <router-outlet />
+</main>
+
+@if (loadingService.isLoading()) {
+  <div class="global-overlay">
+    <div class="loader-container">
+      <div class="sleek-ring"></div>
+      <span class="loader-text">Cargando...</span>
+    </div>
+  </div>
+}

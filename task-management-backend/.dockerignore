@@ -1,0 +1,16 @@
+**/.vs
+**/.vscode
+**/bin
+**/obj
+**/node_modules
+**/.git
+**/.gitignore
+**/Thumbs.db
+**/*.user
+**/*.suo
+**/docker-compose*.yml
+**/Dockerfile*
+**/.dockerignore
+**/README.md
+**/LICENSE
+**/*.md

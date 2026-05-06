@@ -1,0 +1,182 @@
+<div class="page">
+  <header class="page-header">
+    <div>
+      <h1 class="page-title">Gestión de Tareas</h1>
+      <p class="page-subtitle">Sistema interno de administración</p>
+    </div>
+    <button class="btn btn-create" (click)="openNewTaskForm()">
+      {{ (showForm() && !editingTask()) ? '✕ Cerrar' : '+ Nueva Tarea' }}
+    </button>
+  </header>
+
+  @if (showForm()) {
+  <div class="form-wrapper">
+    <app-task-form [taskToEdit]="editingTask()" (saved)="onTaskSaved()" (cancelled)="onCancelForm()" />
+  </div>
+  }
+
+  <div class="stats-row">
+    <div class="stat-card stat-pending">
+      <span class="stat-num">{{ taskService.tasksByStatus().pending }}</span>
+      <span class="stat-label">Pendientes</span>
+    </div>
+    <div class="stat-card stat-progress">
+      <span class="stat-num">{{ taskService.tasksByStatus().inProgress }}</span>
+      <span class="stat-label">En Progreso</span>
+    </div>
+    <div class="stat-card stat-done">
+      <span class="stat-num">{{ taskService.tasksByStatus().done }}</span>
+      <span class="stat-label">Completadas</span>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <button class="filter-btn" [class.active]="taskService.activeFilter() === null"
+      (click)="applyFilter(null)">Todas</button>
+    <button class="filter-btn" [class.active]="taskService.activeFilter() === 'Pending'"
+      (click)="applyFilter('Pending')">Pendientes</button>
+    <button class="filter-btn" [class.active]="taskService.activeFilter() === 'InProgress'"
+      (click)="applyFilter('InProgress')">En Progreso</button>
+    <button class="filter-btn" [class.active]="taskService.activeFilter() === 'Done'"
+      (click)="applyFilter('Done')">Completadas</button>
+    <button class="btn-refresh" (click)="refresh()" title="Refrescar">⟳</button>
+  </div>
+
+  @if (taskService.activeUserFilter()) {
+  <div class="user-filter-badge">
+    Viendo tareas de un usuario específico
+    <button (click)="taskService.setUserFilter(null)">✕ Quitar filtro</button>
+  </div>
+  }
+
+  @if (taskService.error()) {
+  <div class="alert alert-error">{{ taskService.error() }}</div>
+  }
+
+  @if (!taskService.loading() && taskService.filteredTasks().length === 0) {
+  <div class="empty-state">
+    <span class="empty-icon">📋</span>
+    <p>No hay tareas en esta categoría.</p>
+  </div>
+  } @else {
+  <div class="task-grid">
+    @for (task of taskService.filteredTasks(); track task.id) {
+    <div class="task-card" [class.done-card]="task.status === 'Done'">
+      <div class="task-card-header">
+        <app-status-badge [status]="task.status" />
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <span class="task-date">{{ task.createdAt | date:'dd/MM/yyyy' }}</span>
+          @if (task.status !== 'Done') {
+          <button class="btn-icon-edit" (click)="editTask(task)" title="Editar tarea">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+          </button>
+          }
+        </div>
+      </div>
+
+      <h3 class="task-title">{{ task.title }}</h3>
+
+      @if (task.description) {
+      <p class="task-desc">{{ task.description }}</p>
+      }
+
+      <div class="task-user">
+        <span class="user-avatar">{{ task.assignedUserName[0] | uppercase }}</span>
+        <span class="user-info">
+          <strong>{{ task.assignedUserName }}</strong>
+          <small>{{ task.assignedUserEmail }}</small>
+        </span>
+      </div>
+
+      @let info = parseAdditionalInfo(task.additionalInfo);
+      @if (info) {
+      <div class="task-metadata">
+        @if (info.priority) {
+        <span class="meta-badge priority-{{info.priority}}">
+          Prio: {{info.priority}}
+        </span>
+        }
+        <div class="date-edit-wrapper">
+          @if (task.status === 'Done') {
+            @if (info.estimatedEndDate) {
+              <span class="meta-badge">
+                📅 {{info.estimatedEndDate | date:'dd/MM/yyyy'}}
+              </span>
+            }
+          } @else {
+            @if (editingDateTaskId === task.id) {
+              <input
+                type="date"
+                class="date-inline-input"
+                [value]="info.estimatedEndDate || ''"
+                (change)="saveEstimatedDate(task.id, $event)"
+                (blur)="cancelDateEdit()"
+              />
+            } @else {
+              @if (info.estimatedEndDate) {
+                <span class="meta-badge date-badge" (click)="startDateEdit(task.id, $event)" title="Clic para cambiar fecha">
+                  📅 {{info.estimatedEndDate | date:'dd/MM/yyyy'}}
+                  <span class="edit-icon">✎</span>
+                </span>
+              } @else {
+                <button class="btn-add-date" (click)="startDateEdit(task.id, $event)" title="Agregar fecha estimada">
+                  📅 + Fecha
+                </button>
+              }
+            }
+          }
+        </div>
+        @if (info.tags && info.tags.length) {
+        <div class="meta-tags">
+          @for (tag of info.tags; track tag) {
+          <span class="tag">#{{tag}}</span>
+          }
+        </div>
+        }
+      </div>
+      } @else if (task.status !== 'Done') {
+      <div class="task-metadata">
+        <div class="date-edit-wrapper">
+          @if (editingDateTaskId === task.id) {
+            <input
+              type="date"
+              class="date-inline-input"
+              (change)="saveEstimatedDate(task.id, $event)"
+              (blur)="cancelDateEdit()"
+            />
+          } @else {
+            <button class="btn-add-date" (click)="startDateEdit(task.id, $event)" title="Agregar fecha estimada">
+              📅 + Fecha
+            </button>
+          }
+        </div>
+      </div>
+      }
+
+      <div class="task-progress-container">
+        <div class="task-progress-bar" [class.progress-pending]="task.status === 'Pending'"
+          [class.progress-in-progress]="task.status === 'InProgress'" [class.progress-done]="task.status === 'Done'">
+        </div>
+      </div>
+
+      @if (task.status !== 'Done') {
+      <div class="task-actions">
+        @if (task.status === 'Pending') {
+        <button class="btn-action btn-progress" [disabled]="changingStatus === task.id"
+          (click)="changeStatus(task.id, 'InProgress')">→ En Progreso</button>
+        }
+        @if (task.status === 'InProgress') {
+        <button class="btn-action btn-done" [disabled]="changingStatus === task.id"
+          (click)="changeStatus(task.id, 'Done')">✓ Completar</button>
+        }
+      </div>
+      }
+    </div>
+    }
+  </div>
+  }
+</div>

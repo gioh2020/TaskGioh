@@ -1,0 +1,88 @@
+# ============================================================
+# Docker Compose — Task Management System
+# Servicios: SQL Server + Backend (.NET 8) + Frontend (Angular)
+# ============================================================
+# Uso:
+#   docker-compose up -d --build     → Construir y levantar todo
+#   docker-compose logs -f           → Ver logs en tiempo real
+#   docker-compose down              → Detener todo
+#   docker-compose down -v           → Detener y borrar volúmenes (reset BD)
+# ============================================================
+
+services:
+
+  # ────────────────────────────────────────────
+  # SQL Server 2022 (Linux)
+  # ────────────────────────────────────────────
+  sqlserver:
+    image: mcr.microsoft.com/azure-sql-edge:latest
+    container_name: taskmanagement-sqlserver
+    hostname: sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "TaskMgmt2025Strong"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+      - ./Database/init-db.sql:/docker-entrypoint-initdb/init-db.sql
+      - ./Database/entrypoint.sh:/docker-entrypoint-initdb/entrypoint.sh
+    entrypoint: /bin/bash /docker-entrypoint-initdb/entrypoint.sh
+    healthcheck:
+      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "TaskMgmt2025Strong" -C -Q "SELECT 1" || exit 1
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    networks:
+      - taskmanagement-net
+
+  # ────────────────────────────────────────────
+  # Backend — .NET 8 API
+  # ────────────────────────────────────────────
+  backend:
+    build:
+      context: ./task-management-backend
+      dockerfile: Dockerfile
+    container_name: taskmanagement-backend
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ASPNETCORE_URLS: "http://+:8080"
+      # Override del connection string para apuntar al contenedor SQL Server
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=TaskManagementDB;User Id=sa;Password=TaskMgmt2025Strong;TrustServerCertificate=True;MultipleActiveResultSets=True;"
+    ports:
+      - "8080:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    networks:
+      - taskmanagement-net
+    restart: unless-stopped
+
+  # ────────────────────────────────────────────
+  # Frontend — Angular + NGINX
+  # ────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./task-management-frontend
+      dockerfile: Dockerfile
+    container_name: taskmanagement-frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+    networks:
+      - taskmanagement-net
+    restart: unless-stopped
+
+# ────────────────────────────────────────────
+# Red y volúmenes
+# ────────────────────────────────────────────
+networks:
+  taskmanagement-net:
+    driver: bridge
+
+volumes:
+  sqlserver-data:
+    driver: local

@@ -1,0 +1,62 @@
+# .gitignore - Task Management System (Combined .NET & Angular)
+
+# ============================================================
+# .NET / Visual Studio
+# ============================================================
+bin/
+obj/
+[Bb]in/
+[Oo]bj/
+*.user
+*.userosscache
+*.sln.docstates
+.vs/
+.idea/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+Debug/
+Release/
+x64/
+x86/
+build/
+appsettings.Development.json
+# No ignorar appsettings.json base, solo el de desarrollo si tiene secrets
+
+# ============================================================
+# Angular / Node.js
+# ============================================================
+node_modules/
+dist/
+.angular/
+.npm/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.pela-debug.log*
+.yarn/
+.editorconfig
+# Archivos de compilación de Angular
+/src/environments/environment.prod.ts
+/src/environments/environment.ts
+
+# ============================================================
+# Docker & Infrastructure
+# ============================================================
+.docker/
+# No ignorar archivos .pem (aunque es mejor no tenerlos en el repo)
+# taskGioh.pem  <- Descomenta si quieres ignorar tu llave de AWS
+
+# ============================================================
+# OS / Editors
+# ============================================================
+.DS_Store
+Thumbs.db
+*.swp
+*.bak
+*.tmp
+*.log
+.history/

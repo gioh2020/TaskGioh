@@ -1,0 +1,106 @@
+<div class="form-card">
+  <h2 class="form-title">{{ taskToEdit() ? 'Editar Tarea' : 'Nueva Tarea' }}</h2>
+
+  <form [formGroup]="taskForm" (ngSubmit)="onSubmit()" novalidate>
+
+    <div class="field">
+      <label for="title">Título *</label>
+      <input
+        id="title"
+        type="text"
+        formControlName="title"
+        placeholder="Ej: Implementar autenticación"
+        [class.input-error]="isInvalid('title')"
+      />
+      @if (isInvalid('title')) {
+        <span class="error-msg">El título es obligatorio.</span>
+      }
+    </div>
+
+    <div class="field">
+      <label for="description">Descripción</label>
+      <textarea
+        id="description"
+        formControlName="description"
+        rows="3"
+        placeholder="Descripción detallada de la tarea..."
+      ></textarea>
+    </div>
+
+    @if (!taskToEdit()) {
+      <div class="field">
+        <label for="assignedUserId">Usuario asignado *</label>
+        <select
+          id="assignedUserId"
+          formControlName="assignedUserId"
+          [class.input-error]="isInvalid('assignedUserId')"
+        >
+          <option value="">-- Selecciona un colaborador --</option>
+          @for (user of userService.users(); track user.id) {
+            <option [value]="user.id">{{ user.name }} ({{ user.email }})</option>
+          }
+        </select>
+        @if (isInvalid('assignedUserId')) {
+          <span class="error-msg">Debes seleccionar un usuario.</span>
+        }
+        @if (userService.loading()) {
+          <span class="hint">Cargando usuarios...</span>
+        }
+      </div>
+    }
+
+    @if (!taskToEdit()) {
+      <div class="field-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+        <div class="field" style="margin-bottom: 0;">
+          <label for="priority">Prioridad</label>
+          <select id="priority" formControlName="priority">
+            <option value="">Seleccionar...</option>
+            <option value="low">Baja</option>
+            <option value="medium">Media</option>
+            <option value="high">Alta</option>
+            <option value="critical">Crítica</option>
+          </select>
+        </div>
+
+        <div class="field" style="margin-bottom: 0;">
+          <label for="estimatedEndDate">Fecha Estimada</label>
+          <input id="estimatedEndDate" type="date" formControlName="estimatedEndDate" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="tags">Etiquetas (separadas por coma)</label>
+        <input
+          id="tags"
+          type="text"
+          formControlName="tags"
+          placeholder="Ej: backend, frontend, urgente"
+        />
+      </div>
+    }
+
+    @if (taskService.error()) {
+      <div class="alert alert-error">{{ taskService.error() }}</div>
+    }
+
+    @if (successMsg) {
+      <div class="alert alert-success">{{ successMsg }}</div>
+    }
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary" (click)="onCancel()">
+        Cancelar
+      </button>
+      <button
+        type="submit"
+        class="btn"
+        [class.btn-create]="!taskToEdit()"
+        [class.btn-primary]="taskToEdit()"
+        [disabled]="taskForm.invalid || submitting"
+      >
+        @if (submitting) { Guardando... } @else { {{ taskToEdit() ? 'Guardar Cambios' : 'Crear tarea' }} }
+      </button>
+    </div>
+
+  </form>
+</div>
