@@ -6,7 +6,7 @@
 La aplicación se encuentra desplegada y operativa en la siguiente dirección:
 👉 **[http://100.30.192.189/](http://100.30.192.189/)**
 
-*Desplegado en **AWS EC2** utilizando **Docker** y **NGINX**.
+*Desplegado en **AWS EC2** utilizando **Docker** y **NGINX**.*
 
 ---
 
@@ -18,7 +18,14 @@ Solución completa y profesional desarrollada con **.NET 8 Web API**, **Angular 
 - **Base de Datos**: SQL Server. Constraint `ISJSON` y operaciones avanzadas con Entity Framework Core (`FromSqlRaw`, LINQ).
 
 
-### Pasos para Ejecutar el Proyecto
+## Pasos para Ejecutar el Proyecto
+
+### 0. Clonación del Proyecto
+Primero, clona el repositorio en tu máquina local:
+```bash
+git clone https://github.com/gioh2020/TaskGioh.git
+cd TaskGioh
+```
 
 ### 1. Base de Datos (SQL Server)
 Ejecuta los scripts que están en la carpeta `Database/` en el siguiente orden estricto:
@@ -29,9 +36,8 @@ Ejecuta los scripts que están en la carpeta `Database/` en el siguiente orden e
 *(Nota: Asegúrate de que la cadena de conexión en `TaskManagement.API/appsettings.json` apunte a tu servidor local).*
 
 ### 2. Backend (.NET 8)
-Abre una terminal en la ruta raíz del proyecto o directamente en `TaskManagement.API`:
+Abre una terminal en `TaskManagement.API`:
 ```bash
-cd TaskManagement.API
 dotnet run
 ```
 El servidor levantará en `http://localhost:5000`.
@@ -39,22 +45,21 @@ Accede a **Swagger** para ver y probar la documentación de la API:
 `http://localhost:5000/swagger`
 
 ### 3. Frontend (Angular 18)
-Abre otra terminal en la carpeta `task-management-frontend`:
+Abre una terminal en `task-management-frontend`:
 ```bash
-cd task-management-frontend
 npm install
 npm run start
 ```
-La aplicación web se ejecutará en `http://localhost:4200` (o el puerto configurado en angular.json).
+La aplicación web se ejecutará en `http://localhost:4200`.
 
 ## Decisiones Técnicas Destacadas
 
 ### Backend
-1. **Result Pattern**: En lugar de lanzar excepciones (lo cual es costoso a nivel de CPU), los servicios de negocio retornan un objeto `Result<T>` que encapsula el éxito/error y el Status Code HTTP adecuado. El controlador solo debe hacer un match.
-2. **Entity Framework Core**: Todo el acceso de escritura es por el ORM usando el patrón genérico Repository. Las consultas de solo lectura usan `.AsNoTracking()` para mejorar drásticamente el performance ya que no se rastrean los cambios en memoria.
-3. **Reglas de Negocio en el Dominio**: La lógica "No se permite pasar de Pending a Done" vive dentro de la propia entidad `Task`, asegurando el principio de encapsulamiento del DDD.
+1. **Result Pattern**: Los servicios de negocio retornan un objeto `Result<T>` que encapsula el éxito/error, evitando el uso costoso de excepciones para lógica de negocio.
+2. **Entity Framework Core**: Consultas de solo lectura optimizadas con `.AsNoTracking()`.
+3. **Manejo de JSON**: Uso de columnas `NVARCHAR(MAX)` con validación `ISJSON()` y manipulación de campos específicos mediante `JSON_MODIFY`.
 
 ### Frontend
-1. **Angular Signals + RxJS**: Toda la conexión HTTP hacia la API es Pura-Reactiva (RxJS con observables). Una vez los datos llegan, se bajan a Signals (`set()`, `update()`) en el Servicio (que actúa como Store) para que Angular detecte cambios en UI con precisión quirúrgica, sin requerir Zone.js en esos nodos.
-2. **Stand-alone Components y Lazy Loading**: No existe `app.module.ts`. Toda la app está construida sobre módulos funcionales que se cargan diferidos, optimizando el bundle size.
-3. **Control de Errores Global**: A través de `error.interceptor.ts`, capturamos los códigos HTTP (400, 404, 409, 422) lanzados por el Result Pattern en el Backend y los procesamos en la capa de UI de forma amigable.
+1. **Angular Signals + RxJS**: Gestión de estado reactiva para una detección de cambios ultra-eficiente.
+2. **Stand-alone Components y Lazy Loading**: Arquitectura moderna sin `NgModules`, facilitando el Lazy Loading.
+3. **Control de Errores Global**: Interceptor centralizado para procesar respuestas de error del servidor de forma consistente.
