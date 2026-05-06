@@ -7,7 +7,7 @@ import { SkipLoading } from '../interceptors/loading.interceptor';
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
-  private readonly apiUrl = '/api/users';
+  private readonly apiUrl = 'http://localhost:5000/api/users';
 
   private _users = signal<User[]>([]);
   private _loading = signal(false);

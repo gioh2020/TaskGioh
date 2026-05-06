@@ -36,8 +36,9 @@ Ejecuta los scripts que están en la carpeta `Database/` en el siguiente orden e
 *(Nota: Asegúrate de que la cadena de conexión en `TaskManagement.API/appsettings.json` apunte a tu servidor local).*
 
 ### 2. Backend (.NET 8)
-Abre una terminal en `TaskManagement.API`:
+Abre una terminal en la raiz del proyecto:
 ```bash
+cd task-management-backend/TaskManagement.API
 dotnet run
 ```
 El servidor levantará en `http://localhost:5000`.
@@ -45,8 +46,9 @@ Accede a **Swagger** para ver y probar la documentación de la API:
 `http://localhost:5000/swagger`
 
 ### 3. Frontend (Angular 18)
-Abre una terminal en `task-management-frontend`:
+Abre una terminal en la raiz del proyecto:
 ```bash
+cd task-management-frontend
 npm install
 npm run start
 ```
