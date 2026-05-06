@@ -7,7 +7,7 @@ import { SkipLoading } from '../interceptors/loading.interceptor';
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
-  private readonly apiUrl = 'http://localhost:5000/api/users';
+  private readonly backendUrl = 'http://localhost:5000/api/users';
 
   private _users = signal<User[]>([]);
   private _loading = signal(false);
@@ -28,7 +28,7 @@ export class UserService {
     }
     this._error.set(null);
 
-    this.http.get<User[]>(this.apiUrl, {
+    this.http.get<User[]>(this.backendUrl, {
       context: new HttpContext().set(SkipLoading, silent)
     }).pipe(
       catchError(err => {
@@ -47,7 +47,7 @@ export class UserService {
   }
 
   createUser(name: string, email: string): Observable<User> {
-    return this.http.post<User>(this.apiUrl, { name, email }, {
+    return this.http.post<User>(this.backendUrl, { name, email }, {
       context: new HttpContext().set(SkipLoading, true)
     }).pipe(
       tap(user => {
@@ -62,7 +62,7 @@ export class UserService {
   }
 
   updateUser(id: string, name: string): Observable<User> {
-    return this.http.put<User>(`${this.apiUrl}/${id}`, { name }, {
+    return this.http.put<User>(`${this.backendUrl}/${id}`, { name }, {
       context: new HttpContext().set(SkipLoading, true)
     }).pipe(
       tap(updatedUser => {
